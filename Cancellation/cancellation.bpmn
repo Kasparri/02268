@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1pcx4h0" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="2.2.4">
   <bpmn:collaboration id="Collaboration_1jtl">
-    <bpmn:participant id="airlineCompany" name="Airline Company" processRef="CancellationFlightConnector" />
+    <bpmn:participant id="airlineCompany" name="Airline Company" processRef="CancellationFlight" />
     <bpmn:participant id="bankService" name="Bank Service" />
     <bpmn:participant id="customerServiceDesk" name="customer serice desk" />
     <bpmn:participant id="emailService" name="email service" />
@@ -11,7 +11,7 @@
     <bpmn:messageFlow id="MessageFlow_1p8z6em" name="request made" sourceRef="SendTask_1isd8fx" targetRef="emailService" />
     <bpmn:messageFlow id="MessageFlow_08tkzhg" sourceRef="EndEventConfirmationMessageSent" targetRef="customerServiceDesk" />
   </bpmn:collaboration>
-  <bpmn:process id="CancellationFlightConnector" name="Cancellation of flight" isExecutable="true">
+  <bpmn:process id="CancellationFlight" name="Cancellation of flight" isExecutable="true">
     <bpmn:userTask id="refundPaymentActivity" name="Refund payment">
       <bpmn:incoming>SequenceFlow_0a28vts</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_12n2p2l</bpmn:outgoing>
@@ -38,53 +38,11 @@
     <bpmn:sequenceFlow id="SequenceFlow_12n2p2l" sourceRef="refundPaymentActivity" targetRef="ExclusiveGateway_1c3iaas" />
     <bpmn:sequenceFlow id="SequenceFlow_0w4mtib" sourceRef="ExclusiveGateway_06hns0a" targetRef="Task_179f5q4" />
     <bpmn:sequenceFlow id="SequenceFlow_0e7mw7y" sourceRef="Task_179f5q4" targetRef="SendTask_1isd8fx" />
-    <bpmn:userTask id="collectListOfPassengersActivity" name="Collect list of passengers">
-      <bpmn:extensionElements>
-        <camunda:executionListener event="start">
-          <camunda:script scriptFormat="groovy">HashMap&lt;String&gt; bookingDB = new HashMap&lt;String, Integer&gt;();
-bookingDB.put("jens", 0);
-bookingDB.put("ole", 0);
-bookingDB.put("bente", 0);
-bookingDB.put("benjamin", 1);
-bookingDB.put("mads", 1);
-bookingDB.put("Kasper", 2);
-bookingDB.put("Oliver", 0);
-bookingDB.put("Roi", 3);
-        
-execution.setVariable("bookingDB", bookingDB)
-
-Random r = new Random();
-int flightnumber = r.nextInt(4);
-execution.setVariable("flightnumber", flightnumber)</camunda:script>
-        </camunda:executionListener>
-      </bpmn:extensionElements>
-      <bpmn:incoming>SequenceFlow_1129a2t</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_11wh3lw</bpmn:outgoing>
-      <bpmn:property id="Property_1eoshd4" name="__targetRef_placeholder" />
-      <bpmn:dataInputAssociation id="DataInputAssociation_18td2ys">
-        <bpmn:sourceRef>DataStoreReference_197qrhx</bpmn:sourceRef>
-        <bpmn:targetRef>Property_1eoshd4</bpmn:targetRef>
-      </bpmn:dataInputAssociation>
-      <bpmn:dataInputAssociation id="DataInputAssociation_0isoc1x">
-        <bpmn:sourceRef>DataObjectReference_0s36tbn</bpmn:sourceRef>
-        <bpmn:targetRef>Property_1eoshd4</bpmn:targetRef>
-      </bpmn:dataInputAssociation>
-    </bpmn:userTask>
     <bpmn:sequenceFlow id="SequenceFlow_1129a2t" sourceRef="StartEventMessageReceived" targetRef="collectListOfPassengersActivity" />
-    <bpmn:dataStoreReference id="DataStoreReference_197qrhx" name="Booking database" />
     <bpmn:dataStoreReference id="DataStoreReference_1uht6ld" name="Customer database" />
     <bpmn:sequenceFlow id="SequenceFlow_1233r9o" sourceRef="IntermediateThrowEvent_0vkp9nm" targetRef="ExclusiveGateway_1c3iaas" />
-    <bpmn:dataObjectReference id="DataObjectReference_0s36tbn" name="Flight number" dataObjectRef="DataObject_1ac1rxf" />
-    <bpmn:dataObject id="DataObject_1ac1rxf" />
     <bpmn:dataObjectReference id="DataObjectReference_0h9w934" name="Passenger bank information" dataObjectRef="DataObject_1d3ioxy" />
     <bpmn:dataObject id="DataObject_1d3ioxy" />
-    <bpmn:startEvent id="StartEventMessageReceived" name="Flight cancellation event received">
-      <bpmn:outgoing>SequenceFlow_1129a2t</bpmn:outgoing>
-      <bpmn:dataOutputAssociation id="DataOutputAssociation_1y1ls50">
-        <bpmn:targetRef>DataObjectReference_0s36tbn</bpmn:targetRef>
-      </bpmn:dataOutputAssociation>
-      <bpmn:messageEventDefinition messageRef="Message_1gx2hr1" />
-    </bpmn:startEvent>
     <bpmn:scriptTask id="gatherBankInformationScript" name="Gather bank information" scriptFormat="groovy">
       <bpmn:incoming>SequenceFlow_0ts6zfp</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0a28vts</bpmn:outgoing>
@@ -152,26 +110,69 @@ execution.setVariable("cancelSize", size)</camunda:script>
     <bpmn:sequenceFlow id="SequenceFlow_00rabaj" sourceRef="ExclusiveGateway_1c3iaas" targetRef="EndEventConfirmationMessageSent" />
     <bpmn:endEvent id="EndEventConfirmationMessageSent" name="Send confirmation end event">
       <bpmn:incoming>SequenceFlow_00rabaj</bpmn:incoming>
-      <bpmn:messageEventDefinition />
+      <bpmn:messageEventDefinition messageRef="Message_1a6mdz5" />
     </bpmn:endEvent>
+    <bpmn:userTask id="collectListOfPassengersActivity" name="Collect list of passengers">
+      <bpmn:extensionElements>
+        <camunda:executionListener event="start">
+          <camunda:script scriptFormat="groovy">HashMap&lt;String&gt; bookingDB = new HashMap&lt;String, Integer&gt;();
+bookingDB.put("jens", 0);
+bookingDB.put("ole", 0);
+bookingDB.put("bente", 0);
+bookingDB.put("benjamin", 1);
+bookingDB.put("mads", 1);
+bookingDB.put("Kasper", 2);
+bookingDB.put("Oliver", 0);
+bookingDB.put("Roi", 3);
+        
+execution.setVariable("bookingDB", bookingDB)
+
+Random r = new Random();
+int flightnumber = r.nextInt(4);
+execution.setVariable("flightnumber", flightnumber)</camunda:script>
+        </camunda:executionListener>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1129a2t</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_11wh3lw</bpmn:outgoing>
+      <bpmn:property id="Property_1eoshd4" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_18td2ys">
+        <bpmn:sourceRef>DataStoreReference_197qrhx</bpmn:sourceRef>
+        <bpmn:targetRef>Property_1eoshd4</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+      <bpmn:dataInputAssociation id="DataInputAssociation_0isoc1x">
+        <bpmn:sourceRef>DataObjectReference_0s36tbn</bpmn:sourceRef>
+        <bpmn:targetRef>Property_1eoshd4</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:userTask>
+    <bpmn:dataStoreReference id="DataStoreReference_197qrhx" name="Booking database" />
+    <bpmn:startEvent id="StartEventMessageReceived" name="Flight cancellation event received">
+      <bpmn:outgoing>SequenceFlow_1129a2t</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_1y1ls50">
+        <bpmn:targetRef>DataObjectReference_0s36tbn</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+      <bpmn:messageEventDefinition messageRef="Message_1gx2hr1" />
+    </bpmn:startEvent>
+    <bpmn:dataObjectReference id="DataObjectReference_0s36tbn" name="Flight number" dataObjectRef="DataObject_1ac1rxf" />
+    <bpmn:dataObject id="DataObject_1ac1rxf" />
   </bpmn:process>
   <bpmn:message id="Message_1gx2hr1" name="CancellationEventReceived" />
   <bpmn:message id="Message_1hf969m" name="FlightCancelledConfirmationEvent" />
   <bpmn:message id="Message_0t1ohab" name="AllEmailNotificationsReceivedEvent" />
+  <bpmn:message id="Message_1a6mdz5" name="StartRebookingEvent" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1jtl">
       <bpmndi:BPMNShape id="Participant_18v7zog_di" bpmnElement="airlineCompany">
         <dc:Bounds x="174" y="-40" width="1032" height="702" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_1129a2t_di" bpmnElement="SequenceFlow_1129a2t">
-        <di:waypoint x="260" y="312" />
-        <di:waypoint x="343" y="312" />
+        <di:waypoint x="293" y="312" />
+        <di:waypoint x="388" y="312" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="UserTask_0wbjj2o_di" bpmnElement="collectListOfPassengersActivity">
-        <dc:Bounds x="343" y="272" width="100" height="80" />
+        <dc:Bounds x="388" y="272" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_11wh3lw_di" bpmnElement="SequenceFlow_11wh3lw">
-        <di:waypoint x="443" y="312" />
+        <di:waypoint x="488" y="312" />
         <di:waypoint x="527" y="312" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="ParallelGateway_00w660t_di" bpmnElement="ExclusiveGateway_06hns0a">
@@ -207,14 +208,14 @@ execution.setVariable("cancelSize", size)</camunda:script>
         <di:waypoint x="733" y="477" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="DataStoreReference_197qrhx_di" bpmnElement="DataStoreReference_197qrhx">
-        <dc:Bounds x="368" y="171" width="50" height="50" />
+        <dc:Bounds x="413" y="170" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="348" y="148" width="89" height="14" />
+          <dc:Bounds x="393" y="147" width="89" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="DataInputAssociation_18td2ys_di" bpmnElement="DataInputAssociation_18td2ys">
-        <di:waypoint x="393" y="221" />
-        <di:waypoint x="393" y="272" />
+        <di:waypoint x="438" y="220" />
+        <di:waypoint x="438" y="272" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="DataStoreReference_1uht6ld_di" bpmnElement="DataStoreReference_1uht6ld">
         <dc:Bounds x="638" y="10" width="50" height="50" />
@@ -238,18 +239,18 @@ execution.setVariable("cancelSize", size)</camunda:script>
         <di:waypoint x="998" y="337" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="DataObjectReference_0s36tbn_di" bpmnElement="DataObjectReference_0s36tbn">
-        <dc:Bounds x="224" y="379" width="36" height="50" />
+        <dc:Bounds x="257" y="379" width="36" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="208" y="436" width="68" height="14" />
+          <dc:Bounds x="241" y="436" width="68" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="DataInputAssociation_0isoc1x_di" bpmnElement="DataInputAssociation_0isoc1x">
-        <di:waypoint x="260" y="393" />
-        <di:waypoint x="343" y="342" />
+        <di:waypoint x="293" y="394" />
+        <di:waypoint x="388" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataOutputAssociation_1y1ls50_di" bpmnElement="DataOutputAssociation_1y1ls50">
-        <di:waypoint x="242" y="330" />
-        <di:waypoint x="242" y="379" />
+        <di:waypoint x="275" y="330" />
+        <di:waypoint x="275" y="379" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="DataObjectReference_0h9w934_di" bpmnElement="DataObjectReference_0h9w934">
         <dc:Bounds x="814" y="228" width="36" height="50" />
@@ -266,9 +267,9 @@ execution.setVariable("cancelSize", size)</camunda:script>
         <di:waypoint x="814" y="240" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="StartEvent_129nmnq_di" bpmnElement="StartEventMessageReceived">
-        <dc:Bounds x="224" y="294" width="36" height="36" />
+        <dc:Bounds x="257" y="294" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="212" y="246" width="89" height="40" />
+          <dc:Bounds x="230" y="246" width="89" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Participant_1g9flwl_di" bpmnElement="bankService">

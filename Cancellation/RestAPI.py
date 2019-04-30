@@ -2,16 +2,8 @@ import requests
 import json
 import time
 
-
-# Message keys
-START_EVENT_MESSAGE = "CancellationEventReceived"
-EMAIL_CONFIRMATION_MESSAGE = "AllEmailNotificationsReceivedEvent"
-
-# Process ID's
-CANCELLATION_PROCESS_ID = "CancellationFlight"
-
-def wait():
-    print("Press enter to continue...")
+def wait(message):
+    print("\nPress enter to %s..."%message)
     raw_input()
 
 def getTasks(processDefinitionKey):
@@ -58,5 +50,3 @@ def completeCreateEmailsActivity(task_list):
         if "create cancellation notification emails" not in task[2]:
             continue
         completeTask(task)
-        
-
