@@ -1,0 +1,18 @@
+@App:name("CamundaStream")
+@App:description("Description of the plan")
+
+@source(type='http', receiver.url='http://localhost:8081/camundaStream', @map(type='json'))
+@sink(type='log')
+define stream CamundaInputStream(size int, instanceId string);
+
+
+@sink(type='http', 
+        publisher.url='http://localhost:8080/engine-rest/message',
+        headers="'Host:localhost:8080", 
+            @map(type='json', @payload("""{"messageName":"{{messageName}}","processInstanceId":"{{processInstanceId}}"}""") ) ) 
+define stream MessageStream(processInstanceId string, messageName string);
+
+
+from CamundaInputStream
+select instanceId as processInstanceId, 'AllEmailNotificationsReceivedEvent' as messageName
+insert into MessageStream;
