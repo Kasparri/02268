@@ -1,0 +1,17 @@
+@App:name("CheckInStream")
+@App:description("Description of the plan")
+
+-- Please refer to https://docs.wso2.com/display/SP400/Quick+Start+Guide on getting started with SP editor. 
+
+@source(type='http', receiver.url='http://localhost:8081/checkInStream', @map(type='json'))
+@sink(type='log') 
+define stream CheckInInputStream(messageType string, instanceId string);
+
+@sink(type='http', publisher.url='http://127.0.0.1:8080/engine-rest/message',
+    headers = "'Host: 127.0.0.1:8080'",
+    @map(type='json', @payload("""{"messageName":"{{messageName}}", "processInstanceId":"{{processInstanceID}}"}""")))
+define stream MessageStream(messageName string, processInstanceID string);
+
+from CheckInInputStream[messageType == "checkedIn"]
+select "boardingPass" as messageName, instanceId as processInstanceID
+insert into MessageStream;
