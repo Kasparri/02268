@@ -1,0 +1,23 @@
+@App:name("AirlineApp")
+@App:description("Description of the plan")
+
+@source(type='http', receiver.url='http://localhost:8081/WeatherData',@map(type='json'))
+
+define stream WeatherData(temp float);
+
+@sink(type='http',
+    publisher.url='http://127.0.0.1:8080/engine-rest/message',
+    headers = "'Host:127.0.0.1:8080",
+    @map(type='json', @payload("""{"messageName":"{{messageName}}","businessKey":"{{businessKey}}"}""")))
+define stream MessageStream(messageName string, businessKey string);
+
+from WeatherData [temp < 20]
+select 'msgBad' as messageName, '1' as businessKey  
+insert into MessageStream;
+
+from WeatherData [temp >= 20]
+select 'msgGood' as messageName, '1' as businessKey 
+insert into MessageStream;
+
+
+
