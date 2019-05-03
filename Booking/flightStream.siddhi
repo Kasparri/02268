@@ -1,0 +1,11 @@
+@App:name("FlightStream")
+
+@App:description("Receives flight data from bookings")
+
+
+
+@source(type='http', receiver.url='http://localhost:8081/bookingFlightStream', @map(type='json'))
+@
+sink(type='log')
+
+define stream BookingFlightStream(bookingId int, flightData string);
